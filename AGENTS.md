@@ -25,7 +25,7 @@ Guide for AI assistants maintaining this site. The owner is a **graphic designer
 6. **Accessibility is a requirement, not a polish step.** Every image has meaningful `alt` in Portuguese (or `alt=""` if purely decorative). Keep heading order (one `h1`, then `h2` per section, `h3` inside). Keep visible focus styles. Text on colored backgrounds must reach WCAG AA (4.5:1) — the `--aslain-deep` / `--estasong-deep` variables exist for exactly this reason.
 7. **Motion must respect `prefers-reduced-motion`.** Any new animation goes inside the existing patterns (`.reveal`, `.float`, hero keyframes) which are already disabled under reduced motion.
 8. **Performance budget:** each raster image ≤ 1600 px on its long side, WebP, with an 800 px `-sm` variant and `srcset`. Total page weight should stay under ~4 MB. No image over 400 KB without a reason.
-9. **Never commit the PDF or any file over 5 MB.** `*.pdf` is git-ignored on purpose. The footer links to the Google Drive copy.
+9. **The PDF is generated from the site — never edited by hand, never replaced by a designer-exported file.** `portfolio-2026-antonio-chinelato.pdf` is built by `node tools/build-pdf.mjs` (one 16:9 page per section, via the `@media print` block at the end of `style.css`). Regenerate it after **every** content change, before publishing, so the PDF and the site never disagree. Any other `*.pdf` (e.g. the original Canva export) stays git-ignored. No file over 15 MB in the repo.
 10. **Don't add a `CNAME` file or the custom domain in Pages settings until DNS points to GitHub** (§9). Doing it early breaks the working github.io URL.
 11. **Keep the SEO scaffolding in sync:** `<title>`, meta description, Open Graph tags, JSON-LD `Person`, `sitemap.xml` `<lastmod>`, and `og-image.jpg` if the hero changes.
 12. **Progressive enhancement.** The page must be fully readable with JavaScript disabled. `js/main.js` only adds animation, nav state and the letter-split effect.
@@ -37,9 +37,11 @@ index.html            the whole site (semantic sections, pt-BR)
 css/style.css         all styles; tokens in :root; sections in order; responsive at the end
 js/main.js            reveal-on-scroll, header state, active nav link, hero letter split
 assets/img/           optimized WebP (+ -sm variants), vector logos (.svg), og-image.jpg
+tools/build-pdf.mjs   regenerates the PDF from index.html (headless Chrome, no dependencies)
+portfolio-2026-antonio-chinelato.pdf   generated — do not edit; rebuild with the script
 favicon.svg, apple-touch-icon.png
 robots.txt, sitemap.xml, .nojekyll
-.gitignore            excludes *.pdf and .DS_Store
+.gitignore            excludes *.pdf (except the generated one) and .DS_Store
 ```
 
 Section order in `index.html`: hero (`#inicio`) → about (`#sobre`) → projects wrapper (`#projetos`) containing the intro/index and one `<article class="project">` per project (`#cibho`, `#aslain`, `#estasong`) → contact (`#contato`) → footer.
@@ -85,6 +87,12 @@ A new visual element should be composed from these. If none fits, add **one** ne
 
 **New year / new edition.** Change "2026" in: hero band, `<title>`, meta/OG text, footer ©, JSON-LD, `sitemap.xml` `<lastmod>`. Regenerate `og-image.jpg` (1200×675) from the new hero.
 
+**Regenerate the PDF (after any content change).**
+```bash
+node tools/build-pdf.mjs
+```
+Needs Google Chrome installed (set `CHROME=/path/to/chrome` if it's elsewhere) and internet for the fonts. It prints the page count and size — expect 13 pages (one per section) and under ~15 MB. Then render a page or two (`pdftoppm -r 40 -png -f 5 -l 6 portfolio-2026-antonio-chinelato.pdf /tmp/p`) and look at them: text must not be clipped at the bottom of a slide. If a slide overflows, shorten the text or reduce that block's media size inside the `@media print` rules — don't hack the script. When you add a new section, add its class to the slide list in the `@media print` block so it gets its own page.
+
 **Change a color or font.** Almost never the right move — the brand comes from the PDF. If the owner insists, change the token in `:root` only, re-check contrast (§6), and re-screenshot.
 
 ## 6. Checks before you say "done"
@@ -97,6 +105,7 @@ A new visual element should be composed from these. If none fits, add **one** ne
 - [ ] No console errors; no requests to hosts other than the site and Google Fonts.
 - [ ] Desktop (1440) and mobile (390) screenshots reviewed — no horizontal scroll, nothing clipped, hero fits.
 - [ ] `sitemap.xml` `<lastmod>` updated if content changed.
+- [ ] PDF regenerated (`node tools/build-pdf.mjs`) and spot-checked if any text, image or section changed.
 
 ## 7. Previewing locally
 
@@ -110,9 +119,10 @@ Open `http://127.0.0.1:8765/`. For screenshots, use headless Chrome; force `pref
 The site is GitHub Pages, repo `lucaazalim/chinelato.com`, branch `main`, root folder. **Pushing to `main` publishes.**
 
 1. Run the §6 checks and show screenshots.
-2. Get the owner's OK.
-3. Commit with a short message that says what changed in human terms (e.g. `Add Vento project`, `Update contact e-mail`). One change per commit.
-4. `git push`. Wait ~1 minute, then load the live URL with a hard refresh and confirm the change is there. Tell the owner the URL.
+2. Regenerate the PDF if content changed (§5) and commit it together with the change.
+3. Get the owner's OK.
+4. Commit with a short message that says what changed in human terms (e.g. `Add Vento project`, `Update contact e-mail`). One change per commit.
+5. `git push`. Wait ~1 minute, then load the live URL with a hard refresh and confirm the change is there. Tell the owner the URL.
 
 Live URL today: `https://lucaazalim.github.io/chinelato.com/` (until the custom domain is connected, then `https://chinelato.com/`).
 
@@ -130,7 +140,8 @@ DNS currently points the apex at a name.com forwarding server without HTTPS, and
 - `.reveal` elements have `opacity: 0` in CSS until JS adds `.is-visible` — but only under `html.js`; with JS off they're visible. Don't "fix" this.
 - The hero is intentionally `100svh`: one screen, then the content begins.
 - `--aslain-deep` / `--estasong-deep` differ slightly from the logo header colors on purpose (contrast).
-- `Portfolio 2026 - Antonio Chinelato.pdf` sits in the folder but is not in git. Leave it that way.
+- `Portfolio 2026 - Antonio Chinelato.pdf` (the original Canva export) may sit in the folder but is not in git. Leave it that way; the site's PDF is the generated `portfolio-2026-antonio-chinelato.pdf`.
+- In the generated PDF, the header, "rolar ↓" hint and footer are hidden on purpose, and the last page has no page break after it.
 - The e-mail is `ajchnelato@gmail.com` as in the PDF. Confirm with the owner before "correcting" it.
 
 ## 11. When to stop and ask

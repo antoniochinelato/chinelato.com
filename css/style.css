@@ -486,3 +486,35 @@ html.js .reveal.is-visible { opacity: 1; transform: none; }
   html.js .reveal { opacity: 1; transform: none; }
   .float { animation: none; }
 }
+
+/* ---------- print → 16:9 slide deck (tools/build-pdf.mjs) ----------
+   Each block below becomes one landscape page. Keep new sections in this list. */
+@media print {
+  @page { size: 13.333in 7.5in; margin: 0; }
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    animation: none !important; transition: none !important;
+  }
+  .site-header, .skip-link, .hero__scroll, .site-footer { display: none !important; }
+  html.js .reveal { opacity: 1; transform: none; }
+  .float { transform: rotate(var(--r, 0deg)); }
+
+  .hero, .about, .projects-intro, .project__hero, .project__body, .contact {
+    height: 7.5in; overflow: hidden;
+    break-after: page; break-inside: avoid;
+  }
+  .hero { min-height: 0; }
+  .about, .projects-intro { display: grid; align-content: center; padding-block: 0; border-top: 0; }
+  .project__hero { min-height: 0; padding-block: .9in .6in; }
+  .project__body { padding-block: 0; display: grid; align-content: center; }
+  .project__body--aslain-deep, .project__body--estasong-deep { display: block; }
+  .bleed { height: 7.5in; }
+  .bleed__text { padding-block: 0; }
+  .bleed__media { min-height: 0; height: 7.5in; }
+  .collage__phone img { width: min(100%, 17rem); }
+  .mosaic .card-img--wide { aspect-ratio: 2 / 1; }
+  .card-img img, .bleed__media img { transform: none !important; }
+  .contact { display: grid; grid-template-rows: 1fr auto; break-after: auto; }
+  .contact__top { padding-block: 0; }
+}
