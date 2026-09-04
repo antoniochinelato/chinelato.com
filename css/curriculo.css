@@ -68,8 +68,8 @@
   align-items: baseline;
   line-height: 1.4;
 }
-.cv-entry + .cv-entry { margin-top: 1rem; }
-.cv-entry p { margin-top: 0; }
+.cv-entry + .cv-entry { margin-top: 1.15rem; }
+.cv-section .cv-entry p { margin-top: 0; }   /* beats .cv-section p + p */
 .cv-entry h3 { font: 600 1em / 1.35 var(--font-body); grid-column: 1; }
 .cv-entry__org { font-weight: 400; }
 .cv-entry__what { grid-column: 1; }
