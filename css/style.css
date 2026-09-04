@@ -416,7 +416,6 @@ html.is-scrolled .hero__scroll {
   background: var(--purple);
   color: var(--cream);
   padding-block: clamp(3rem, 7vw, 6rem) var(--section-y);
-  border-top: 1px solid rgba(255, 253, 246, 0.12);
 }
 .index {
   margin-top: clamp(2rem, 4vw, 3.5rem);
@@ -903,7 +902,6 @@ html.js .reveal.is-visible {
     display: grid;
     align-content: center;
     padding-block: 0;
-    border-top: 0;
   }
   .project__hero {
     min-height: 0;
