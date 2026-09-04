@@ -1,0 +1,111 @@
+/* =========================================================
+   Currículo — screen layout + A4 print (tools/build-pdf.mjs)
+   Uses the tokens from style.css.
+   ========================================================= */
+
+.cv { font-size: clamp(1rem, .3vw + .9rem, 1.0625rem); line-height: 1.55; }
+
+.cv-nav {
+  width: min(100% - 2 * var(--gutter), 52rem);
+  margin: 0 auto;
+  padding: 1.25rem 0 0;
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  font: 500 .95rem / 1 var(--font-display);
+}
+.cv-nav a { text-decoration: none; color: var(--ink); }
+.cv-nav__back:hover { color: var(--purple); }
+.cv-nav__pdf {
+  padding: .6rem 1rem;
+  background: var(--ink); color: var(--cream) !important;
+  border-radius: 999px;
+  transition: background .25s var(--ease);
+}
+.cv-nav__pdf:hover { background: var(--purple); }
+
+.cv-page {
+  width: min(100% - 2 * var(--gutter), 52rem);
+  margin: 1.5rem auto 3rem;
+  padding: clamp(1.75rem, 5vw, 3.5rem) clamp(1.5rem, 5vw, 3.5rem);
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: 0 1px 0 rgba(47, 47, 47, .06), 0 20px 50px -30px rgba(47, 47, 47, .25);
+}
+
+.cv-header h1 {
+  font: 700 clamp(1.9rem, 4vw, 2.6rem) / 1.05 var(--font-display);
+  letter-spacing: -.025em;
+}
+.cv-role {
+  margin-top: .35rem;
+  font: italic 400 clamp(1rem, 1.4vw, 1.15rem) / 1.35 var(--font-display);
+  color: var(--purple);
+}
+.cv-contact {
+  margin-top: .9rem;
+  display: flex; flex-wrap: wrap; gap: .25rem 0;
+  font-size: .92em;
+  color: rgba(47, 47, 47, .85);
+}
+.cv-contact li + li::before { content: "·"; margin: 0 .55em; color: rgba(47, 47, 47, .4); }
+.cv-contact a { color: inherit; text-decoration-color: rgba(81, 63, 172, .45); text-underline-offset: .15em; }
+.cv-contact a:hover { color: var(--purple); }
+
+.cv-section { margin-top: 1.9rem; }
+.cv-section h2 {
+  font: 600 .78rem / 1 var(--font-display);
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--purple);
+  padding-bottom: .5rem; margin-bottom: .9rem;
+  border-bottom: 1.5px solid var(--purple);
+}
+.cv-section p + p { margin-top: .6rem; }
+
+.cv-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .1rem 1.5rem;
+  align-items: baseline;
+}
+.cv-entry + .cv-entry { margin-top: 1rem; }
+.cv-entry h3 { font: 600 1em / 1.35 var(--font-body); grid-column: 1; }
+.cv-entry__org { font-weight: 400; }
+.cv-entry__what { grid-column: 1; }
+.cv-entry__where, .cv-entry__when { grid-column: 2; text-align: right; color: rgba(47, 47, 47, .7); font-size: .95em; white-space: nowrap; }
+.cv-entry__where { grid-row: 1; }
+.cv-entry__when { grid-row: 2; }
+.cv-entry .cv-list { grid-column: 1 / -1; }
+
+.cv-list { list-style: disc; padding-left: 1.25rem; margin-top: .45rem; }
+.cv-list li + li { margin-top: .3rem; }
+.cv-list li::marker { color: var(--purple); }
+
+.cv-footer {
+  width: min(100% - 2 * var(--gutter), 52rem);
+  margin: 0 auto 2rem;
+  font-size: .9rem; color: rgba(47, 47, 47, .7);
+}
+.cv-footer a { color: var(--purple); text-underline-offset: .15em; }
+
+@media (max-width: 36rem) {
+  .cv-entry { grid-template-columns: 1fr; }
+  .cv-entry__where, .cv-entry__when { grid-column: 1; grid-row: auto; text-align: left; white-space: normal; }
+  .cv-contact { flex-direction: column; }
+  .cv-contact li + li::before { content: none; }
+}
+
+/* ---------- print: one A4 page ---------- */
+@media print {
+  @page { size: A4; margin: 14mm 16mm 16mm; }
+  .cv { background: #fff; font-size: 10.75pt; line-height: 1.5; }
+  .cv-nav, .cv-footer, .skip-link { display: none !important; }
+  .cv-page { width: auto; margin: 0; padding: 0; background: none; border-radius: 0; box-shadow: none; }
+  .cv-header h1 { font-size: 24pt; }
+  .cv-role { font-size: 11pt; }
+  .cv-contact { font-size: 10pt; margin-top: .6rem; }
+  .cv-contact a { text-decoration: none; color: inherit; }
+  .cv-section { margin-top: 1.1rem; break-inside: avoid; }
+  .cv-section h2 { font-size: 8.5pt; margin-bottom: .6rem; padding-bottom: .35rem; }
+  .cv-entry + .cv-entry { margin-top: .7rem; }
+  .cv-list li + li { margin-top: .15rem; }
+  a[href^="http"]::after { content: none; }
+}
