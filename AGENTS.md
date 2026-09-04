@@ -25,7 +25,7 @@ Guide for AI assistants maintaining this site. The owner is a **graphic designer
 6. **Accessibility is a requirement, not a polish step.** Every image has meaningful `alt` in Portuguese (or `alt=""` if purely decorative). Keep heading order (one `h1`, then `h2` per section, `h3` inside). Keep visible focus styles. Text on colored backgrounds must reach WCAG AA (4.5:1) — the `--aslain-deep` / `--estasong-deep` variables exist for exactly this reason.
 7. **Motion must respect `prefers-reduced-motion`.** Any new animation goes inside the existing patterns (`.reveal`, `.float`, hero keyframes) which are already disabled under reduced motion.
 8. **Performance budget:** each raster image ≤ 1600 px on its long side, WebP, with an 800 px `-sm` variant and `srcset`. Total page weight should stay under ~4 MB. No image over 400 KB without a reason.
-9. **Both PDFs are generated from the site — never edited by hand, never replaced by a designer-exported file.** `node tools/build-pdf.mjs` builds `portfolio-2026-antonio-chinelato.pdf` from `index.html` (one 16:9 page per section, via the `@media print` block at the end of `style.css`) and `curriculo-antonio-chinelato.pdf` from `curriculo.html` (one A4 page, via `css/curriculo.css`). Regenerate after **every** content change, before publishing, so the PDFs and the pages never disagree. Any other `*.pdf` stays git-ignored. No file over 15 MB in the repo.
+9. **Both PDFs are generated from the site — never edited by hand, never replaced by a designer-exported file.** `node tools/build-pdf.mjs` builds `pdf/portfolio-2026-antonio-chinelato.pdf` from `index.html` (one 16:9 page per section, via the `@media print` block at the end of `style.css`) and `pdf/curriculo-antonio-chinelato.pdf` from `curriculo.html` (one A4 page, via `css/curriculo.css`). Regenerate after **every** content change, before publishing, so the PDFs and the pages never disagree. Any other `*.pdf` stays git-ignored. No file over 15 MB in the repo.
 10. **Don't add a `CNAME` file or the custom domain in Pages settings until DNS points to GitHub** (§9). Doing it early breaks the working github.io URL.
 11. **Keep the SEO scaffolding in sync:** `<title>`, meta description, Open Graph tags, JSON-LD `Person`, `sitemap.xml` `<lastmod>`, and `og-image.jpg` if the hero changes.
 12. **Progressive enhancement.** The page must be fully readable with JavaScript disabled. `js/main.js` only adds animation, nav state and the letter-split effect.
@@ -40,11 +40,10 @@ css/curriculo.css     résumé styles (uses the same tokens) + A4 print rules
 js/main.js            reveal-on-scroll, header state, active nav link, hero letter split
 assets/img/           optimized WebP (+ -sm variants), vector logos (.svg), og-image.jpg
 tools/build-pdf.mjs   regenerates both PDFs (headless Chrome, no dependencies)
-portfolio-2026-antonio-chinelato.pdf   generated — do not edit; rebuild with the script
-curriculo-antonio-chinelato.pdf        generated — do not edit; rebuild with the script
+pdf/                  generated PDFs (portfolio + résumé) — do not edit; rebuild with the script
 favicon.svg, apple-touch-icon.png
 robots.txt, sitemap.xml, .nojekyll
-.gitignore            excludes *.pdf (except the generated one) and .DS_Store
+.gitignore            excludes *.pdf outside pdf/ and .DS_Store
 ```
 
 `curriculo.html` loads `style.css` (for tokens and base styles) and then `curriculo.css`; it has its own small nav (back link + "Baixar em PDF") instead of the portfolio header.
@@ -99,7 +98,7 @@ A new visual element should be composed from these. If none fits, add **one** ne
 node tools/build-pdf.mjs              # both
 node tools/build-pdf.mjs curriculo    # just one (portfolio | curriculo)
 ```
-Needs Google Chrome installed (set `CHROME=/path/to/chrome` if it's elsewhere) and internet for the fonts. It prints size and page count — expect **13 pages** for the portfolio (one per section) and **1 page** for the résumé, each under ~15 MB. Then render a page or two (`pdftoppm -r 40 -png -f 5 -l 6 portfolio-2026-antonio-chinelato.pdf /tmp/p`) and look at them: text must not be clipped at the bottom of a slide. If a slide overflows, shorten the text or reduce that block's media size inside the `@media print` rules — don't hack the script. When you add a new portfolio section, add its class to the slide list in the `@media print` block so it gets its own page.
+Needs Google Chrome installed (set `CHROME=/path/to/chrome` if it's elsewhere) and internet for the fonts. It prints size and page count — expect **13 pages** for the portfolio (one per section) and **1 page** for the résumé, each under ~15 MB. Then render a page or two (`pdftoppm -r 40 -png -f 5 -l 6 pdf/portfolio-2026-antonio-chinelato.pdf /tmp/p`) and look at them: text must not be clipped at the bottom of a slide. If a slide overflows, shorten the text or reduce that block's media size inside the `@media print` rules — don't hack the script. When you add a new portfolio section, add its class to the slide list in the `@media print` block so it gets its own page.
 
 **Change a color or font.** Almost never the right move — the brand comes from the PDF. If the owner insists, change the token in `:root` only, re-check contrast (§6), and re-screenshot.
 
@@ -149,7 +148,7 @@ DNS currently points the apex at a name.com forwarding server without HTTPS, and
 - `.reveal` elements have `opacity: 0` in CSS until JS adds `.is-visible` — but only under `html.js`; with JS off they're visible. Don't "fix" this.
 - The hero is intentionally `100svh`: one screen, then the content begins.
 - `--aslain-deep` / `--estasong-deep` differ slightly from the logo header colors on purpose (contrast).
-- `Portfolio 2026 - Antonio Chinelato.pdf` (the original Canva export) may sit in the folder but is not in git. Leave it that way; the site's PDF is the generated `portfolio-2026-antonio-chinelato.pdf`.
+- `Portfolio 2026 - Antonio Chinelato.pdf` (the original Canva export) may sit in the folder but is not in git. Leave it that way; the site's PDF is the generated `pdf/portfolio-2026-antonio-chinelato.pdf`.
 - In the generated PDF, the header, "rolar ↓" hint and footer are hidden on purpose, and the last page has no page break after it.
 - The e-mail is `ajchnelato@gmail.com` as in the PDF. Confirm with the owner before "correcting" it.
 

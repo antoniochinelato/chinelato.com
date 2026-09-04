@@ -7,21 +7,21 @@
 //
 // Each page's @media print rules decide the layout; this script only sets the paper size.
 import { spawn } from 'node:child_process';
-import { writeFileSync, mkdtempSync, rmSync, statSync } from 'node:fs';
+import { writeFileSync, mkdirSync, mkdtempSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { resolve } from 'node:path';
+import { resolve, dirname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const JOBS = {
   portfolio: {
     page: 'index.html',
-    out: 'portfolio-2026-antonio-chinelato.pdf',
+    out: 'pdf/portfolio-2026-antonio-chinelato.pdf',
     paper: { paperWidth: 13.333, paperHeight: 7.5 },     // 16:9 slides
     viewport: { width: 1280, height: 720 },
   },
   curriculo: {
     page: 'curriculo.html',
-    out: 'curriculo-antonio-chinelato.pdf',
+    out: 'pdf/curriculo-antonio-chinelato.pdf',
     paper: { paperWidth: 8.27, paperHeight: 11.69 },     // A4 portrait
     viewport: { width: 794, height: 1123 },
   },
@@ -87,6 +87,7 @@ async function build(name) {
       scale: 1, transferMode: 'ReturnAsBase64',
     });
     const out = resolve(job.out);
+    mkdirSync(dirname(out), { recursive: true });
     writeFileSync(out, Buffer.from(pdf.data, 'base64'));
     const pages = (pdf.data.length && Buffer.from(pdf.data, 'base64').toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;
     console.log(`✓ ${job.out}  ${(statSync(out).size / 1e6).toFixed(1)} MB, ${pages} page${pages === 1 ? '' : 's'}`);

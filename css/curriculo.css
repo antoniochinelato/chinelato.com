@@ -46,7 +46,8 @@
   font-size: .92em;
   color: rgba(47, 47, 47, .85);
 }
-.cv-contact li + li::before { content: "·"; margin: 0 .55em; color: rgba(47, 47, 47, .4); }
+.cv-contact + .cv-contact { margin-top: .25rem; }
+.cv-contact li + li::before { content: "•"; margin: 0 .6em; font-size: .8em; color: rgba(47, 47, 47, .5); }
 .cv-contact a { color: inherit; text-decoration-color: rgba(81, 63, 172, .45); text-underline-offset: .15em; }
 .cv-contact a:hover { color: var(--purple); }
 
@@ -63,10 +64,12 @@
 .cv-entry {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: .1rem 1.5rem;
+  gap: 0 1.5rem;
   align-items: baseline;
+  line-height: 1.4;
 }
 .cv-entry + .cv-entry { margin-top: 1rem; }
+.cv-entry p { margin-top: 0; }
 .cv-entry h3 { font: 600 1em / 1.35 var(--font-body); grid-column: 1; }
 .cv-entry__org { font-weight: 400; }
 .cv-entry__what { grid-column: 1; }
@@ -102,6 +105,7 @@
   .cv-header h1 { font-size: 24pt; }
   .cv-role { font-size: 11pt; }
   .cv-contact { font-size: 10pt; margin-top: .6rem; }
+  .cv-contact + .cv-contact { margin-top: .15rem; }
   .cv-contact a { text-decoration: none; color: inherit; }
   .cv-section { margin-top: 1.1rem; break-inside: avoid; }
   .cv-section h2 { font-size: 8.5pt; margin-bottom: .6rem; padding-bottom: .35rem; }

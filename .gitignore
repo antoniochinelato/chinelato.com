@@ -1,4 +1,3 @@
 *.pdf
-!portfolio-2026-antonio-chinelato.pdf
-!curriculo-antonio-chinelato.pdf
+!pdf/*.pdf
 .DS_Store
