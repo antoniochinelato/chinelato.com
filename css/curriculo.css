@@ -14,6 +14,9 @@
 }
 .cv-nav a { text-decoration: none; color: var(--ink); }
 .cv-nav__back:hover { color: var(--purple); }
+.cv-nav__actions { display: flex; align-items: center; gap: 1.25rem; }
+.cv-nav__lang { text-decoration: underline !important; text-decoration-color: rgba(81, 63, 172, .45) !important; text-underline-offset: .2em; }
+.cv-nav__lang:hover { color: var(--purple) !important; }
 .cv-nav__pdf {
   padding: .6rem 1rem;
   background: var(--ink); color: var(--cream) !important;
@@ -90,6 +93,10 @@
 .cv-footer a { color: var(--purple); text-underline-offset: .15em; }
 
 @media (max-width: 36rem) {
+  .cv-nav { font-size: .85rem; gap: .75rem; }
+  .cv-nav a { white-space: nowrap; }
+  .cv-nav__actions { gap: .9rem; }
+  .cv-nav__pdf { padding: .55rem .85rem; }
   .cv-entry { grid-template-columns: 1fr; }
   .cv-entry__where, .cv-entry__when { grid-column: 1; grid-row: auto; text-align: left; white-space: normal; }
   .cv-contact { flex-direction: column; }

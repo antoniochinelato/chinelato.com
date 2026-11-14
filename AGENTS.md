@@ -18,14 +18,14 @@ Guide for AI assistants maintaining this site. The owner is a **graphic designer
 ## 2. Non-negotiables (never drift from these)
 
 1. **Plain HTML, CSS and JS only.** No frameworks, no build step, no `npm`, no bundlers, no CSS preprocessors, no CMS. If the site ever "needs" one of these, stop and explain the trade-off to the owner first.
-2. **Two pages only: `index.html` (portfolio) and `curriculo.html` (résumé).** Portfolio sections are `<section>`/`<article>` blocks with `id`s; new portfolio content = new block in `index.html`, not a new page. The résumé is a separate page because it prints as an A4 document.
+2. **Three pages only: `index.html` (portfolio), `curriculo.html` (résumé, pt-BR) and `resume.html` (the same résumé in English).** Portfolio sections are `<section>`/`<article>` blocks with `id`s; new portfolio content = new block in `index.html`, not a new page. The résumé is a separate page because it prints as an A4 document. The two résumés are translations of each other: **any change to one must be made to the other in the same commit.**
 3. **Only two external requests: Google Fonts (Poppins + Inter).** No analytics, tracking pixels, chat widgets, cookie banners, embeds or third-party scripts unless the owner explicitly asks *and* you explain the privacy/speed cost.
 4. **Relative asset paths** (`assets/img/…`, `css/style.css`). Never `/assets/…`. The site must work at `https://lucaazalim.github.io/chinelato.com/` and at `https://chinelato.com/`.
 5. **Brand fidelity.** Colors and fonts come from the original PDF and live as CSS custom properties in `css/style.css` `:root`. Use the variables; never hard-code a new hex. Poppins = display (headings, pills, kickers, links); Inter = body.
 6. **Accessibility is a requirement, not a polish step.** Every image has meaningful `alt` in Portuguese (or `alt=""` if purely decorative). Keep heading order (one `h1`, then `h2` per section, `h3` inside). Keep visible focus styles. Text on colored backgrounds must reach WCAG AA (4.5:1) — the `--aslain-deep` / `--estasong-deep` variables exist for exactly this reason.
 7. **Motion must respect `prefers-reduced-motion`.** Any new animation goes inside the existing patterns (`.reveal`, `.float`, hero keyframes) which are already disabled under reduced motion.
 8. **Performance budget:** each raster image ≤ 1600 px on its long side, WebP, with an 800 px `-sm` variant and `srcset`. Total page weight should stay under ~4 MB. No image over 400 KB without a reason.
-9. **Both PDFs are generated from the site — never edited by hand, never replaced by a designer-exported file.** `node tools/build-pdf.mjs` builds `pdf/portfolio-2026-antonio-chinelato.pdf` from `index.html` (one 16:9 page per section, via the `@media print` block at the end of `style.css`) and `pdf/curriculo-antonio-chinelato.pdf` from `curriculo.html` (one A4 page, via `css/curriculo.css`). Regenerate after **every** content change, before publishing, so the PDFs and the pages never disagree. Any other `*.pdf` stays git-ignored. No file over 15 MB in the repo.
+9. **All PDFs are generated from the site — never edited by hand, never replaced by a designer-exported file.** `node tools/build-pdf.mjs` builds `pdf/portfolio-2026-antonio-chinelato.pdf` from `index.html` (one 16:9 page per section, via the `@media print` block at the end of `style.css`) and `pdf/curriculo-antonio-chinelato.pdf` / `pdf/resume-antonio-chinelato.pdf` from `curriculo.html` / `resume.html` (one A4 page each, via `css/curriculo.css`). Regenerate after **every** content change, before publishing, so the PDFs and the pages never disagree. Any other `*.pdf` stays git-ignored. No file over 15 MB in the repo.
 10. **Don't add a `CNAME` file or the custom domain in Pages settings until DNS points to GitHub** (§9). Doing it early breaks the working github.io URL.
 11. **Keep the SEO scaffolding in sync:** `<title>`, meta description, Open Graph tags, JSON-LD `Person`, `sitemap.xml` `<lastmod>`, and `og-image.jpg` if the hero changes.
 12. **Progressive enhancement.** The page must be fully readable with JavaScript disabled. `js/main.js` only adds animation, nav state and the letter-split effect.
@@ -34,19 +34,20 @@ Guide for AI assistants maintaining this site. The owner is a **graphic designer
 
 ```
 index.html            the portfolio (semantic sections, pt-BR)
-curriculo.html        the résumé (screen + A4 print layout)
+curriculo.html        the résumé in Portuguese (screen + A4 print layout)
+resume.html           the same résumé in English (same structure and CSS)
 css/style.css         all portfolio styles; tokens in :root; sections in order; responsive; print slides at the end
 css/curriculo.css     résumé styles (uses the same tokens) + A4 print rules
 js/main.js            reveal-on-scroll, header state, active nav link, hero letter split
 assets/img/           optimized WebP (+ -sm variants), vector logos (.svg), og-image.jpg
-tools/build-pdf.mjs   regenerates both PDFs (headless Chrome, no dependencies)
-pdf/                  generated PDFs (portfolio + résumé) — do not edit; rebuild with the script
+tools/build-pdf.mjs   regenerates the three PDFs (headless Chrome, no dependencies)
+pdf/                  generated PDFs (portfolio + both résumés) — do not edit; rebuild with the script
 favicon.svg, apple-touch-icon.png
 robots.txt, sitemap.xml, .nojekyll
 .gitignore            excludes *.pdf outside pdf/ and .DS_Store
 ```
 
-`curriculo.html` loads `style.css` (for tokens and base styles) and then `curriculo.css`; it has its own small nav (back link + "Baixar em PDF") instead of the portfolio header.
+`curriculo.html` and `resume.html` load `style.css` (for tokens and base styles) and then `curriculo.css`; each has its own small nav (back link, a link to the other language, and "Baixar em PDF" / "Download PDF") instead of the portfolio header. They point at each other with `hreflang` alternates in `<head>`.
 
 Section order in `index.html`: hero (`#inicio`) → about (`#sobre`) → projects wrapper (`#projetos`) containing the intro/index and one `<article class="project">` per project (`#cibho`, `#aslain`, `#estasong`) → contact (`#contato`) → footer.
 
@@ -91,14 +92,14 @@ A new visual element should be composed from these. If none fits, add **one** ne
 
 **New year / new edition.** Change "2026" in: hero band, `<title>`, meta/OG text, footer ©, JSON-LD, `sitemap.xml` `<lastmod>`. Regenerate `og-image.jpg` (1200×675) from the new hero.
 
-**Update the résumé.** Edit the text in `curriculo.html` — it is plain semantic HTML: one `<section>` per heading, `<article class="cv-entry">` per school/job (title, place, description, dates, optional bullet list). Keep the order and the tone (first person, past tense for finished things). The phone number and e-mail are public by the owner's choice; confirm before adding any new personal data. Then rebuild the PDF (below) and check it is still **one** A4 page — if it spills to two, tighten the wording rather than shrinking the type below 10 pt.
+**Update the résumé.** Edit the text in `curriculo.html` **and** translate the same change into `resume.html` — it is plain semantic HTML: one `<section>` per heading, `<article class="cv-entry">` per school/job (title, place, description, dates, optional bullet list). Keep the order and the tone (first person, past tense for finished things). The phone number and e-mail are public by the owner's choice; confirm before adding any new personal data. In the English version keep the international phone format (`+55 31 …`) and English dates ("Fall 2025 – Spring 2026"). Then rebuild both résumé PDFs (below) and check each is still **one** A4 page — if it spills to two, tighten the wording rather than shrinking the type below 10 pt.
 
 **Regenerate the PDFs (after any content change).**
 ```bash
-node tools/build-pdf.mjs              # both
-node tools/build-pdf.mjs curriculo    # just one (portfolio | curriculo)
+node tools/build-pdf.mjs              # all three
+node tools/build-pdf.mjs curriculo resume   # just some (portfolio | curriculo | resume)
 ```
-Needs Google Chrome installed (set `CHROME=/path/to/chrome` if it's elsewhere) and internet for the fonts. It prints size and page count — expect **13 pages** for the portfolio (one per section) and **1 page** for the résumé, each under ~15 MB. Then render a page or two (`pdftoppm -r 40 -png -f 5 -l 6 pdf/portfolio-2026-antonio-chinelato.pdf /tmp/p`) and look at them: text must not be clipped at the bottom of a slide. If a slide overflows, shorten the text or reduce that block's media size inside the `@media print` rules — don't hack the script. When you add a new portfolio section, add its class to the slide list in the `@media print` block so it gets its own page.
+Needs Google Chrome installed (set `CHROME=/path/to/chrome` if it's elsewhere) and internet for the fonts. It prints size and page count — expect **13 pages** for the portfolio (one per section) and **1 page** for each résumé, each under ~15 MB. Then render a page or two (`pdftoppm -r 40 -png -f 5 -l 6 pdf/portfolio-2026-antonio-chinelato.pdf /tmp/p`) and look at them: text must not be clipped at the bottom of a slide. If a slide overflows, shorten the text or reduce that block's media size inside the `@media print` rules — don't hack the script. When you add a new portfolio section, add its class to the slide list in the `@media print` block so it gets its own page.
 
 **Change a color or font.** Almost never the right move — the brand comes from the PDF. If the owner insists, change the token in `:root` only, re-check contrast (§6), and re-screenshot.
 
@@ -112,8 +113,8 @@ Needs Google Chrome installed (set `CHROME=/path/to/chrome` if it's elsewhere) a
 - [ ] No console errors; no requests to hosts other than the site and Google Fonts.
 - [ ] Desktop (1440) and mobile (390) screenshots reviewed — no horizontal scroll, nothing clipped, hero fits.
 - [ ] `sitemap.xml` `<lastmod>` updated if content changed.
-- [ ] PDFs regenerated (`node tools/build-pdf.mjs`) and spot-checked if any text, image or section changed (13 pages / 1 page).
-- [ ] Both pages still link to each other: portfolio footer → `curriculo.html`; résumé nav → `index.html` and the résumé PDF.
+- [ ] PDFs regenerated (`node tools/build-pdf.mjs`) and spot-checked if any text, image or section changed (13 pages / 1 page / 1 page).
+- [ ] Pages still link to each other: portfolio footer → `curriculo.html` and `resume.html`; each résumé nav → `index.html`, the other language and its own PDF.
 
 ## 7. Previewing locally
 

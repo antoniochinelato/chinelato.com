@@ -3,7 +3,7 @@
 // Node's built-in WebSocket — no dependencies). Run from the repo root after any content change:
 //
 //   node tools/build-pdf.mjs              build everything
-//   node tools/build-pdf.mjs curriculo    build one job by name (portfolio | curriculo)
+//   node tools/build-pdf.mjs curriculo    build one job by name (portfolio | curriculo | resume)
 //
 // Each page's @media print rules decide the layout; this script only sets the paper size.
 import { spawn } from 'node:child_process';
@@ -23,6 +23,12 @@ const JOBS = {
     page: 'curriculo.html',
     out: 'pdf/curriculo-antonio-chinelato.pdf',
     paper: { paperWidth: 8.27, paperHeight: 11.69 },     // A4 portrait
+    viewport: { width: 794, height: 1123 },
+  },
+  resume: {
+    page: 'resume.html',
+    out: 'pdf/resume-antonio-chinelato.pdf',
+    paper: { paperWidth: 8.27, paperHeight: 11.69 },     // A4 portrait (English résumé)
     viewport: { width: 794, height: 1123 },
   },
 };
