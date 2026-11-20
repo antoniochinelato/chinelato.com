@@ -20,13 +20,13 @@ Guide for AI assistants maintaining this site. The owner is a **graphic designer
 1. **Plain HTML, CSS and JS only.** No frameworks, no build step, no `npm`, no bundlers, no CSS preprocessors, no CMS. If the site ever "needs" one of these, stop and explain the trade-off to the owner first.
 2. **Three pages only: `index.html` (portfolio), `curriculo.html` (résumé, pt-BR) and `resume.html` (the same résumé in English).** Portfolio sections are `<section>`/`<article>` blocks with `id`s; new portfolio content = new block in `index.html`, not a new page. The résumé is a separate page because it prints as an A4 document. The two résumés are translations of each other: **any change to one must be made to the other in the same commit.**
 3. **Only two external requests: Google Fonts (Poppins + Inter).** No analytics, tracking pixels, chat widgets, cookie banners, embeds or third-party scripts unless the owner explicitly asks *and* you explain the privacy/speed cost.
-4. **Relative asset paths** (`assets/img/…`, `css/style.css`). Never `/assets/…`. The site must work at `https://lucaazalim.github.io/chinelato.com/` and at `https://chinelato.com/`.
+4. **Relative asset paths** (`assets/img/…`, `css/style.css`). Never `/assets/…`. Relative paths keep the site working at `https://chinelato.com/`, in a local preview, and in the PDF build (§5), which loads the pages from disk.
 5. **Brand fidelity.** Colors and fonts come from the original PDF and live as CSS custom properties in `css/style.css` `:root`. Use the variables; never hard-code a new hex. Poppins = display (headings, pills, kickers, links); Inter = body.
 6. **Accessibility is a requirement, not a polish step.** Every image has meaningful `alt` in Portuguese (or `alt=""` if purely decorative). Keep heading order (one `h1`, then `h2` per section, `h3` inside). Keep visible focus styles. Text on colored backgrounds must reach WCAG AA (4.5:1) — the `--aslain-deep` / `--estasong-deep` variables exist for exactly this reason.
 7. **Motion must respect `prefers-reduced-motion`.** Any new animation goes inside the existing patterns (`.reveal`, `.float`, hero keyframes) which are already disabled under reduced motion.
 8. **Performance budget:** each raster image ≤ 1600 px on its long side, WebP, with an 800 px `-sm` variant and `srcset`. Total page weight should stay under ~4 MB. No image over 400 KB without a reason.
 9. **All PDFs are generated from the site — never edited by hand, never replaced by a designer-exported file.** `node tools/build-pdf.mjs` builds `pdf/portfolio-2026-antonio-chinelato.pdf` from `index.html` (one 16:9 page per section, via the `@media print` block at the end of `style.css`) and `pdf/curriculo-antonio-chinelato.pdf` / `pdf/resume-antonio-chinelato.pdf` from `curriculo.html` / `resume.html` (one A4 page each, via `css/curriculo.css`). Regenerate after **every** content change, before publishing, so the PDFs and the pages never disagree. Any other `*.pdf` stays git-ignored. No file over 15 MB in the repo.
-10. **Don't add a `CNAME` file or the custom domain in Pages settings until DNS points to GitHub** (§9). Doing it early breaks the working github.io URL.
+10. **Keep the `CNAME` file** (it holds `chinelato.com`). GitHub Pages reads it to serve the custom domain; deleting or changing it takes `chinelato.com` offline (§9).
 11. **Keep the SEO scaffolding in sync:** `<title>`, meta description, Open Graph tags, JSON-LD `Person`, `sitemap.xml` `<lastmod>`, and `og-image.jpg` if the hero changes.
 12. **Progressive enhancement.** The page must be fully readable with JavaScript disabled. `js/main.js` only adds animation, nav state and the letter-split effect.
 
@@ -44,6 +44,7 @@ tools/build-pdf.mjs   regenerates the three PDFs (headless Chrome, no dependenci
 pdf/                  generated PDFs (portfolio + both résumés) — do not edit; rebuild with the script
 favicon.svg, apple-touch-icon.png
 robots.txt, sitemap.xml, .nojekyll
+CNAME                 the custom domain for GitHub Pages (chinelato.com) — keep it
 .gitignore            excludes *.pdf outside pdf/ and .DS_Store
 ```
 
@@ -125,24 +126,29 @@ Open `http://127.0.0.1:8765/`. For screenshots, use headless Chrome; force `pref
 
 ## 8. Publishing
 
-The site is GitHub Pages, repo `lucaazalim/chinelato.com`, branch `main`, root folder. **Pushing to `main` publishes.**
+The site is GitHub Pages, repo `antoniochinelato/chinelato.com`, branch `main`, root folder. **Pushing to `main` publishes.**
 
 1. Run the §6 checks and show screenshots.
 2. Regenerate the PDF if content changed (§5) and commit it together with the change.
 3. Get the owner's OK.
 4. Commit with a short message that says what changed in human terms (e.g. `Add Vento project`, `Update contact e-mail`). One change per commit.
-5. `git push`. Wait ~1 minute, then load the live URL with a hard refresh and confirm the change is there. Tell the owner the URL.
+5. `git push`. Wait for the deploy (`gh run list -R antoniochinelato/chinelato.com -L 1` shows "pages build and deployment"; it takes under a minute), then load the live URL with a hard refresh and confirm the change is there. Tell the owner the URL. Files pass through Cloudflare's cache (§9), so if the old version still shows, wait about 10 minutes and check again.
 
-Live URL today: `https://lucaazalim.github.io/chinelato.com/` (until the custom domain is connected, then `https://chinelato.com/`).
+Live URL: `https://chinelato.com/`. The old `https://antoniochinelato.github.io/chinelato.com/` redirects there.
 
 If something goes wrong after publishing: `git revert` the last commit and push — don't hand-edit backwards.
 
-## 9. Custom domain (chinelato.com) — pending
+## 9. Custom domain (chinelato.com) — connected
 
-DNS currently points the apex at a name.com forwarding server without HTTPS, and `www` is on Cloudflare redirecting to the broken apex. When the owner is ready:
-1. In the DNS provider, set apex `A` records to `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`; set `www` as `CNAME` → `lucaazalim.github.io`. Remove the old forwarding / Cloudflare redirect rule.
-2. Only then: repo Settings → Pages → Custom domain → `chinelato.com`, enable "Enforce HTTPS" once the certificate is issued (can take up to an hour).
-3. Confirm `https://chinelato.com/` and `https://www.chinelato.com/` both load, then update nothing else — canonical/OG URLs already point at `https://chinelato.com/`.
+How it works today (checked November 2026):
+- The repo's `CNAME` file and the Pages settings both say `chinelato.com`.
+- The domain's DNS is on Cloudflare (nameservers `*.ns.cloudflare.com`), and the apex goes through Cloudflare's proxy (it resolves to Cloudflare IPs, not GitHub's). Visitors get HTTPS from Cloudflare's certificate. The zone is not in the account the local `cf` CLI is signed in to, so DNS and Cloudflare settings are changed in the Cloudflare dashboard by whoever owns that account.
+- GitHub has no certificate for the domain (Cloudflare sits in front), so GitHub's "Enforce HTTPS" stays off. Don't try to turn it on.
+- Canonical and Open Graph URLs already point at `https://chinelato.com/`.
+
+Still open (DNS changes: ask the owner first, §11):
+1. **`http://` isn't redirected to `https://`.** Both load. Fix in Cloudflare: SSL/TLS → Edge Certificates → "Always Use HTTPS".
+2. **`www.chinelato.com` doesn't load**: it has no DNS record. Fix in Cloudflare: add a `CNAME` record `www` → `antoniochinelato.github.io` (proxied). GitHub Pages then redirects `www` to the apex. Confirm `https://www.chinelato.com/` lands on `https://chinelato.com/`.
 
 ## 10. Things that look wrong but aren't
 
