@@ -99,7 +99,7 @@ A new visual element should be composed from these. If none fits, add **one** ne
 node tools/build-pdf.mjs              # all three
 node tools/build-pdf.mjs curriculo resume   # just some (portfolio | curriculo | resume)
 ```
-Needs Google Chrome installed (set `CHROME=/path/to/chrome` if it's elsewhere) and internet for the fonts. It prints size and page count — expect **13 pages** for the portfolio (one per section) and **1 page** for each résumé, each under ~15 MB. Then render a page or two (`pdftoppm -r 40 -png -f 5 -l 6 pdf/portfolio-2026-antonio-chinelato.pdf /tmp/p`) and look at them: text must not be clipped at the bottom of a slide. If a slide overflows, shorten the text or reduce that block's media size inside the `@media print` rules — don't hack the script. When you add a new portfolio section, add its class to the slide list in the `@media print` block so it gets its own page.
+Needs Google Chrome installed (set `CHROME=/path/to/chrome` if it's elsewhere) and internet for the fonts. It prints size and page count — expect **13 pages** for the portfolio (one per section, about 3 MB) and **1 page** for each résumé (well under 1 MB). If the portfolio jumps back toward 10 MB, the script's JPEG step stopped working (§10). Then render a page or two (`pdftoppm -r 40 -png -f 5 -l 6 pdf/portfolio-2026-antonio-chinelato.pdf /tmp/p`) and look at them: text must not be clipped at the bottom of a slide. If a slide overflows, shorten the text or reduce that block's media size inside the `@media print` rules — don't hack the script. When you add a new portfolio section, add its class to the slide list in the `@media print` block so it gets its own page.
 
 **Change a color or font.** Almost never the right move — the brand comes from the PDF. If the owner insists, change the token in `:root` only, re-check contrast (§6), and re-screenshot.
 
@@ -151,6 +151,7 @@ DNS currently points the apex at a name.com forwarding server without HTTPS, and
 - `--aslain-deep` / `--estasong-deep` differ slightly from the logo header colors on purpose (contrast).
 - `Portfolio 2026 - Antonio Chinelato.pdf` (the original Canva export) may sit in the folder but is not in git. Leave it that way; the site's PDF is the generated `pdf/portfolio-2026-antonio-chinelato.pdf`.
 - In the generated PDF, the header, "rolar ↓" hint and footer are hidden on purpose, and the last page has no page break after it.
+- `tools/build-pdf.mjs` swaps every opaque photo for a JPEG copy (quality 0.85, full pixel size) just before printing, and starts Chrome with `--allow-file-access-from-files` so it can do that. This is on purpose: Chrome stores WebP images uncompressed in a PDF (the portfolio was 9.5 MB; with JPEGs it is about 3 MB, with no visible difference). It happens only inside the build. The site's own images stay WebP (§2.8). Cut-outs with transparency can't be JPEG and stay as they are.
 - The e-mail is `ajchnelato@gmail.com` as in the PDF. Confirm with the owner before "correcting" it.
 
 ## 11. When to stop and ask

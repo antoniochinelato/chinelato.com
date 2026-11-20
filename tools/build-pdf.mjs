@@ -5,7 +5,8 @@
 //   node tools/build-pdf.mjs              build everything
 //   node tools/build-pdf.mjs curriculo    build one job by name (portfolio | curriculo | resume)
 //
-// Each page's @media print rules decide the layout; this script only sets the paper size.
+// Each page's @media print rules decide the layout; this script only sets the paper size and,
+// to keep the PDFs small, hands Chrome JPEG copies of the photos (see JPEG_QUALITY below).
 import { spawn } from 'node:child_process';
 import { writeFileSync, mkdirSync, mkdtempSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -33,6 +34,12 @@ const JOBS = {
   },
 };
 
+// Chrome stores WebP/PNG images uncompressed (lossless) in a PDF, so a 260 KB WebP photo becomes
+// ~3 MB, but it embeds JPEG data as-is. Before printing, every opaque raster image is re-encoded as
+// a JPEG at its full pixel size, in the page only (the site's WebP files are untouched). Images
+// with transparency stay as they are: JPEG has no alpha channel.
+const JPEG_QUALITY = 0.85;
+
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const wanted = process.argv.slice(2);
 for (const name of wanted) if (!JOBS[name]) { console.error(`Unknown job "${name}". Available: ${Object.keys(JOBS).join(', ')}`); process.exit(1); }
@@ -40,7 +47,9 @@ const jobs = wanted.length ? wanted : Object.keys(JOBS);
 
 const port = 9400 + Math.floor(Math.random() * 400);
 const profile = mkdtempSync(`${tmpdir()}/pdf-`);
-const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', '--no-first-run',
+// --allow-file-access-from-files: pages load from file://, and without it the JPEG step's canvas
+// counts as cross-origin and refuses to read the image pixels.
+const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', '--no-first-run', '--allow-file-access-from-files',
   `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, 'about:blank'], { stdio: 'ignore' });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -85,6 +94,31 @@ async function build(name) {
     })()`);
     const broken = await run('[...document.images].filter(i => !i.naturalWidth).map(i => i.getAttribute("src"))');
     if (broken.length) throw new Error(`${job.page}: images failed to load: ${broken.join(', ')}`);
+
+    const jpeg = await run(`(async () => {
+      try {
+        let n = 0;
+        for (const img of [...document.images]) {
+          if (img.currentSrc.endsWith('.svg')) continue;
+          // Decode the chosen file again without srcset: img.naturalWidth is scaled by the srcset density.
+          const raw = new Image(); raw.src = img.currentSrc; await raw.decode();
+          const c = document.createElement('canvas');
+          c.width = raw.naturalWidth; c.height = raw.naturalHeight;
+          const g = c.getContext('2d', { willReadFrequently: true });
+          g.drawImage(raw, 0, 0);
+          const px = g.getImageData(0, 0, c.width, c.height).data;
+          let opaque = true;
+          for (let i = 3; i < px.length; i += 4) if (px[i] < 255) { opaque = false; break; }
+          if (!opaque) continue;
+          img.removeAttribute('srcset'); img.removeAttribute('sizes');
+          img.src = c.toDataURL('image/jpeg', ${JPEG_QUALITY});
+          await img.decode();
+          n++;
+        }
+        return { n };
+      } catch (e) { return { error: String(e) }; }
+    })()`);
+    if (!jpeg || jpeg.error) throw new Error(`${job.page}: converting photos to JPEG failed: ${jpeg?.error}`);
     await sleep(300);
 
     const pdf = await send('Page.printToPDF', {
@@ -96,7 +130,7 @@ async function build(name) {
     mkdirSync(dirname(out), { recursive: true });
     writeFileSync(out, Buffer.from(pdf.data, 'base64'));
     const pages = (pdf.data.length && Buffer.from(pdf.data, 'base64').toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;
-    console.log(`✓ ${job.out}  ${(statSync(out).size / 1e6).toFixed(1)} MB, ${pages} page${pages === 1 ? '' : 's'}`);
+    console.log(`✓ ${job.out}  ${(statSync(out).size / 1e6).toFixed(1)} MB, ${pages} page${pages === 1 ? '' : 's'}, ${jpeg.n} photo${jpeg.n === 1 ? '' : 's'} as JPEG`);
   } finally {
     ws.close();
   }
